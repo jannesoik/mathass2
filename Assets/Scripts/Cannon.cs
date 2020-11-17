@@ -34,10 +34,17 @@ public class Cannon : MonoBehaviour
     {
         // instantiate bullet at firelocation
         //GameObject bullet = Instantiate(bulletPrefab, fireLocation.transform.position, Quaternion.identity);
-        bulletPrefab.gameObject.SetActive(true);
+        if (bulletPrefab.gameObject.active==false)
+        {
+            bulletPrefab.gameObject.SetActive(true);
 
-        // add force to bullet (only bullet has rigidbody)
-        //bullet.GetComponent<Rigidbody>().AddForce(transform.forward * firePower, ForceMode.Impulse);
-        //LevelManager.instance.shoot();
+        }
+        else
+        {
+            bulletPrefab.gameObject.SetActive(false);
+
+        }
+
+
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum Physicscasttype
 {
@@ -51,10 +53,41 @@ public class Raycaster : MonoBehaviour
 
     private RayTransform gizmoRayTransform;
 
+    int scoreNum;
+    int bouncesNum;
+    public Text scoreText;
+    public Text bouncesText;
+    AudioSource audioSource;
+    int hscoreNum;
+    public Text hscoreText;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        scoreNum = 0;
+        hscoreNum = PlayerPrefs.GetInt("hscoreNum", hscoreNum);
+        hscoreText.text = hscoreNum.ToString();
+    }
+
     private void Start()
     {
         if (startAutomatically)
             StartRaycastloop();
+
+        
+    }
+
+    private void Update()
+    {
+        if (bouncesNum >= 30)
+        {
+            if (scoreNum>hscoreNum)
+            {
+                hscoreNum = scoreNum;
+                PlayerPrefs.SetInt("hscoreNum", hscoreNum);
+            }
+            SceneManager.LoadScene("SampleScene");
+        }
     }
 
     public void StartRaycastloop(RayTransform rayTransform)
@@ -86,7 +119,7 @@ public class Raycaster : MonoBehaviour
         {
             rayTransform = ShootRay(rayTransform);
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(rayBounceDelay);
         }
     }
 
@@ -107,6 +140,22 @@ public class Raycaster : MonoBehaviour
             //ray visuals
             StartCoroutine(MoveTrailAlongTheRay(currentRayTransform.rayPosition, rayHit.point, rayHit.normal));
             SetLineRendererPoints(currentRayTransform.rayPosition, rayHit.point);
+
+            // add score
+            if (rayHit.collider.tag=="sphere")
+            {
+                scoreNum++;
+                print("scorenum " + scoreNum);
+                scoreText.text = scoreNum.ToString();
+                audioSource.Play();
+            }
+            else
+            {
+                bouncesNum++;
+                print("bouncesnum " + bouncesNum);
+                bouncesText.text = bouncesNum.ToString();
+            }
+            
 
             // current ray transform for gizmo
             gizmoRayTransform = new RayTransform(currentRayTransform.rayPosition, currentRayTransform.rayDirection, rayHit.distance);
@@ -164,18 +213,22 @@ public class Raycaster : MonoBehaviour
         Gizmos.matrix = Matrix4x4.TRS(gizmoRayTransform.rayPosition, Quaternion.LookRotation(gizmoRayTransform.rayDirection), Vector3.one);
         Gizmos.color = Color.green;
 
-        Gizmos.DrawSphere(Vector3.zero, 1f);
+        Gizmos.DrawWireSphere(Vector3.zero, 1f);
 
-        //switch (PhysicscastType)
-        //{
-        //    case Physicscasttype.Raycast:
-        //        Gizmos.DrawLine(Vector3.zero, (Vector3.forward * gizmoRayTransform.rayDistance * 1f));
-        //        break;
-        //    case Physicscasttype.Spherecast:
-        //        Gizmos.DrawSphere(Vector3.zero, 1f);
-        //        break;
-        //}
 
+
+
+
+
+
+
+
+
+
+
+
+        Gizmos.DrawSphere(Vector3.zero, 0.95f);
 
     }
+
 }
